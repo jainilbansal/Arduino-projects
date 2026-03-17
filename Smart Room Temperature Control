@@ -1,0 +1,68 @@
+int pot = A0;
+int tempPin = A1;
+int fanPin = 9;
+int modePin = 7;
+
+int currentSpeed = 0;
+int targetSpeed = 0;
+
+int fanLevel = 0;
+
+void setup() {
+  pinMode(fanPin, OUTPUT);
+  pinMode(modePin, INPUT);
+}
+
+void loop() {
+
+  int mode = digitalRead(modePin);
+
+  if(mode == HIGH) {
+
+    // Manual mode
+    int value = analogRead(pot);
+    targetSpeed = map(value,0,1023,0,255);
+
+  }
+
+  else {
+
+    // Auto mode
+    int sensorValue = analogRead(tempPin);
+
+    float voltage = sensorValue * (5.0 / 1023.0);
+    float temperature = (voltage - 0.5) * 100;
+
+    if(fanLevel == 0 && temperature >= 24) fanLevel = 1;
+
+    else if(fanLevel == 1) {
+      if(temperature >= 28) fanLevel = 2;
+      if(temperature <= 22) fanLevel = 0;
+    }
+
+    else if(fanLevel == 2) {
+      if(temperature >= 32) fanLevel = 3;
+      if(temperature <= 26) fanLevel = 1;
+    }
+
+    else if(fanLevel == 3) {
+      if(temperature >= 40) fanLevel = 4;
+      if(temperature <= 30) fanLevel = 2;
+    }
+
+    else if(fanLevel == 4 && temperature <= 38) fanLevel = 3;
+
+    if(fanLevel == 0) targetSpeed = 0;
+    if(fanLevel == 1) targetSpeed = 80;
+    if(fanLevel == 2) targetSpeed = 140;
+    if(fanLevel == 3) targetSpeed = 200;
+    if(fanLevel == 4) targetSpeed = 255;
+  }
+
+  if(currentSpeed < targetSpeed) currentSpeed++;
+  if(currentSpeed > targetSpeed) currentSpeed--;
+
+  analogWrite(fanPin,currentSpeed);
+
+  delay(30);
+}
