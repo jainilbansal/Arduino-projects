@@ -1,0 +1,65 @@
+// Pin configuration
+const int trigA = 3;
+const int echoA = 4;
+
+const int trigB = 6;
+const int echoB = 7;
+
+// Offset between sensors (cm)
+const float sensor_gap = 6.0;
+
+// Function to measure distance from a sensor
+float getDistance(int trigPin, int echoPin) {
+  long duration;
+  float distance;
+
+  // Trigger pulse
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(3);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  // Read echo
+  duration = pulseIn(echoPin, HIGH, 30000); // timeout for stability
+
+  // Convert to distance (cm)
+  distance = duration * 0.0343 / 2.0;
+
+  return distance;
+}
+
+void setup() {
+  Serial.begin(9600);
+
+  pinMode(trigA, OUTPUT);
+  pinMode(echoA, INPUT);
+
+  pinMode(trigB, OUTPUT);
+  pinMode(echoB, INPUT);
+}
+
+void loop() {
+  float d1 = getDistance(trigA, echoA);
+  delay(50); // small delay to avoid interference
+
+  float d2 = getDistance(trigB, echoB);
+
+  // Final calculation
+  float total_distance = d1 + d2 + sensor_gap;
+
+  // Print values
+  Serial.print("Sensor 1: ");
+  Serial.print(d1);
+  Serial.print(" cm | ");
+
+  Serial.print("Sensor 2: ");
+  Serial.print(d2);
+  Serial.print(" cm | ");
+
+  Serial.print("Total Distance: ");
+  Serial.print(total_distance);
+  Serial.println(" cm");
+
+  delay(500);
+}
